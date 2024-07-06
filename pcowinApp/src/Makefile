@@ -41,7 +41,7 @@ pcowin_SRCS += NdArrayRef.cpp
 
 # Include path to vendor headers
 USR_INCLUDES_WIN32 += -I../include/
-
+LIB_LIBS += $(LIBZMQ)ADZMQ  #added by LY
 # These are the vendor libraries
 ifeq (windows-x64-debug, $(findstring windows-x64-debug, $(T_A)))
   LIB_INSTALLS += $(wildcard ../lib64/*.lib)

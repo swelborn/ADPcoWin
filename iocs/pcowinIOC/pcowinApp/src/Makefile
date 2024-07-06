@@ -15,6 +15,12 @@ $(PROD_NAME)_DBD += asyn.dbd
 $(PROD_NAME)_DBD += busySupport.dbd
 $(PROD_NAME)_DBD += pcowinSupport.dbd
 $(PROD_NAME)_DBD += pcowinHardwareSupport.dbd
+#added for ADZMQ support<<<======================
+$(PROD_NAME)_DBD += ADZMQSupport.dbd
+$(PROD_NAME)_DBD += stdSupport.dbd
+$(PROD_NAME)_DBD += std.dbd
+
+
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 $(PROD_NAME)_SRCS += $(PROD_NAME)_registerRecordDeviceDriver.cpp $(PROD_NAME)Main.cpp
@@ -25,6 +31,17 @@ $(PROD_NAME)_LIBS += pcowin PCO_CDlg Pco_conv SC2_Cam SC2_DLG
 # Other library dependencies
 $(PROD_NAME)_LIBS += ADBase
 $(PROD_NAME)_LIBS += busy
+
+#added for ADZMQ support<<<======================
+$(PROD_NAME)_LIBS += ADZMQ
+$(PROD_NAME)_LIBS += std
+ifeq ($(OS_CLASS),WIN32)
+    LIBZMQ = libzmq
+else
+    LIBZMQ = zmq
+endif
+$(PROD_NAME)_LIBS += $(LIBZMQ)
+
 
 # System libraries
 $(PROD_NAME)_SYS_LIBS += nafxcw
@@ -43,4 +60,5 @@ include $(ADCORE)/ADApp/commonDriverMakefile
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
+
 

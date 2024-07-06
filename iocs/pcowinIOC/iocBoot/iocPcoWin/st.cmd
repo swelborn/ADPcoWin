@@ -5,7 +5,7 @@ dbLoadDatabase("$(TOP)/dbd/pcowinApp.dbd")
 pcowinApp_registerRecordDeviceDriver(pdbbase) 
 
 # Prefix for all records
-epicsEnvSet("PREFIX", "XF05IDD-ES{PCO:1}:")
+epicsEnvSet("PREFIX", "BL832:")
 
 # The port name for the detector
 epicsEnvSet("PORT",   "PCO1")
@@ -22,7 +22,8 @@ epicsEnvSet("CBUFFS", "500")
 # The search path for database files
 epicsEnvSet("EPICS_DB_INCLUDE_PATH", "$(ADCORE)/db")
 # Define NELEMENTS to be enough for a 2048x2048x3 (color) image
-epicsEnvSet("NELEMENTS", "11059200")
+#epicsEnvSet("NELEMENTS", "11059200")
+epicsEnvSet("NELEMENTS", "12582912")
 
 # pcoConfig(const char* portName, int maxBuffers, size_t maxMemory)
 pcoConfig("$(PORT)", 0, 0, 8)
@@ -32,9 +33,9 @@ pcoApiConfig("$(PORT)")
 
 # Asyn tracing
 asynSetTraceIOMask($(PORT), 0, 2)
-#asynSetTraceMask($(PORT), 0, 0xFF)
-#asynSetTraceFile($(PORT), 0, "asynTrace.out")
-#asynSetTraceInfoMask($(PORT), 0, 0xf)
+asynSetTraceMask($(PORT), 0, 0xFF)
+asynSetTraceFile($(PORT), 0, "asynTrace.out")
+asynSetTraceInfoMask($(PORT), 0, 0xf)
 
 dbLoadRecords("$(ADPCOWIN)/db/pco.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),ADDR=0,TIMEOUT=1")
 dbLoadRecords("$(ADPCOWIN)/db/pco_device_firmware.template", "P=$(PREFIX),R=cam1:,PORT=$(PORT),N=0")
@@ -59,7 +60,23 @@ dbLoadRecords("$(ADCORE)/db/NDStdArrays.template", "P=$(PREFIX),R=image1:,PORT=I
 
 # Load all other plugins using commonPlugins.cmd
 < $(ADCORE)/iocBoot/commonPlugins.cmd
+
+# Optional: load NDPluginPva plugin
+
+#NDPvaConfigure("PVA1", $(QSIZE), 0, "$(PORT)", 0, $(PREFIX)Pva1:Image, 0, 0, 0)
+#dbLoadRecords("NDPva.template",  "P=$(PREFIX),R=Pva1:, PORT=PVA1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+#dbLoadRecords("$(ADCORE)/ADApp/Db/NDPva.template",  "P=$(PREFIX),R=Pva1:, PORT=PVA1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT)")
+
+# Must start PVA server if this is enabled
+#startPVAServer
+
 set_requestfile_path("$(ADPCOWIN)/pcowinApp/Db")
+
+
+#start ZMQ broadcast
+NDZMQConfigure("NDZMQ1", "tcp://*:1234", 3, 0, "$(PORT)", 0)
+dbLoadRecords("$(ADCORE)/ADApp/Db/NDPluginBase.template","P=$(PREFIX),R=ZMQ1:,PORT=NDZMQ1,ADDR=0,TIMEOUT=1,NDARRAY_PORT=$(PORT),NDARRAY_ADDR=0")
+doAfterIocInit ("dbpf $(PREFIX)ZMQ1:EnableCallbacks,1")
 
 iocInit()
 
